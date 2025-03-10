@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .header img {
+            width: 50px;
+            height: 50px;
+        }
+        .controls {
+            margin: 20px;
+        }
+        .controls button {
+            width: 150px;
+            height: 40px;
+            font-size: 16px;
+        }
+        .active {
+            background-color: hotpink;
+        }
+        .main-container {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            width: 80%;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .side-image {
+            width: 300px;
+            height: auto;
+            position: absolute;
+            left: 80px;
+                }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin: 20px auto;
+            width: 315px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            border: 2px solid #000;
+            cursor: pointer;
+            background: white;
+        }
+        .cell.taken {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="R.jpg" alt="Logo">
+        <h1>Tic-Tac-Toe</h1>
+    </div>
+    <div class="controls">
+        <button id="playerBtn" class="active" onclick="startGame('player')">Two Player</button>
+        <button id="aiBtn" onclick="startGame('ai')">Play vs Computer</button>
+    </div>
+    <div class="main-container">
+        <img src="hey.jpg" alt="Tic-Tac-Toe Illustration" class="side-image">
+        <div class="game-area">
+            <div class="board" id="board"></div>
+            <h2 id="status"></h2>
+            <button onclick="resetGame()">Restart</button>
+        </div>
+    </div>
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameMode = 'player';
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        function startGame(mode) {
+            gameMode = mode;
+            document.getElementById('playerBtn').classList.remove('active');
+            document.getElementById('aiBtn').classList.remove('active');
+            if (mode === 'player') {
+                document.getElementById('playerBtn').classList.add('active');
+            } else {
+                document.getElementById('aiBtn').classList.add('active');
+            }
+            resetGame();
+        }
+
+        function createBoard() {
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            board.forEach((cell, index) => {
+                const cellElement = document.createElement('div');
+                cellElement.classList.add('cell');
+                cellElement.dataset.index = index;
+                cellElement.textContent = cell;
+                cellElement.addEventListener('click', () => makeMove(index));
+                boardElement.appendChild(cellElement);
+            });
+        }
+
+        function makeMove(index) {
+            if (board[index] === '') {
+                board[index] = currentPlayer;
+                document.querySelector(`[data-index='${index}']`).textContent = currentPlayer;
+                document.querySelector(`[data-index='${index}']`).classList.add('taken');
+                if (checkWin(currentPlayer)) {
+                    document.getElementById('status').textContent = `${currentPlayer} Wins!`;
+                    disableBoard();
+                    return;
+                }
+                if (!board.includes('')) {
+                    document.getElementById('status').textContent = 'Draw!';
+                    return;
+                }
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                if (gameMode === 'ai' && currentPlayer === 'O') {
+                    setTimeout(computerMove, 500);
+                }
+            }
+        }
+
+        function computerMove() {
+            let bestMove = getBestMove();
+            makeMove(bestMove);
+        }
+
+        function getBestMove() {
+            let emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        function checkWin(player) {
+            return winPatterns.some(pattern => pattern.every(index => board[index] === player));
+        }
+
+        function disableBoard() {
+            document.querySelectorAll('.cell').forEach(cell => cell.classList.add('taken'));
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            document.getElementById('status').textContent = '';
+            createBoard();
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
